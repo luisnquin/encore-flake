@@ -11,6 +11,12 @@ in
   options.programs.encore = {
     enable = mkEnableOption "Enable Encore CLI";
 
+    package = mkOption {
+      type = types.package;
+      default = encore;
+      description = "Encore package to install.";
+    };
+
     settings = {
       browser = mkOption {
         type = types.enum [ "auto" "never" "always" ];
@@ -25,7 +31,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = [
-      encore
+      cfg.package
     ];
 
     xdg.configFile."encore/config".source = (pkgs.formats.toml { }).generate "encore-config" {

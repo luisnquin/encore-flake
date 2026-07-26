@@ -1,5 +1,5 @@
 {
-  description = "nix flake that wraps the released encore binaries";
+  description = "nix flake that packages Encore from source and released binaries";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
@@ -11,7 +11,6 @@
     let
       eachSystem = nixpkgs.lib.genAttrs [
         "x86_64-linux"
-        "x86_64-darwin"
         "aarch64-linux"
         "aarch64-darwin"
       ];
@@ -19,10 +18,18 @@
     {
       packages = eachSystem (system:
         let
-          encore = nixpkgs.legacyPackages.${system}.callPackage ./encore.nix { };
+          pkgs = nixpkgs.legacyPackages.${system};
+          encoreBin = pkgs.callPackage ./encore-bin.nix { };
+          encore = pkgs.callPackage ./encore.nix { };
         in
         {
-          encore = encore;
+          inherit encore;
+          encore-bin = encoreBin;
+          encore-cli = encore.components.cli;
+          encore-tsparser = encore.components.tsparser;
+          encore-runtime-go = encore.components.runtimeGo;
+          encore-runtime-js = encore.components.runtimeJs;
+          encore-go = encore.components.encoreGo;
           default = encore;
         });
 
@@ -30,7 +37,7 @@
 
       homeModules.default = { pkgs, ... } @ args:
         import ./hm-module.nix ({
-          inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) encore;
+          encore = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
         }
         // args);
     };

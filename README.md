@@ -1,6 +1,6 @@
 # :snowflake: encore-flake
 
-A flake for simplifying installation of the released encore binaries on nix systems.
+A flake for simplifying installation of Encore on nix systems.
 
 Try it out by simply running
 
@@ -39,6 +39,23 @@ home.packages = [
 environment.systemPackages = [
   inputs.encore.packages.${pkgs.stdenv.hostPlatform.system}.encore
 ];
+```
+
+`encore` builds from source. `encore-bin` keeps installing the released binaries.
+
+### Applying patches
+
+The source package accepts patches through `override`:
+
+```nix
+let
+  encore = inputs.encore.packages.${pkgs.stdenv.hostPlatform.system}.encore;
+in
+encore.override {
+  patches = [
+    ./patches/my-encore-change.patch
+  ];
+}
 ```
 
 ### In a Development Shell
@@ -100,6 +117,8 @@ and use the `programs.encore` options
   };
 }
 ```
+
+Set `programs.encore.package` to `encore-bin` to use the released binaries.
 
 You can then keep it up to date by running
 
